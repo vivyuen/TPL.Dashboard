@@ -1,5 +1,5 @@
 ---
-title: "TPL Weekly Stats Dashboard"
+title: "TPL_Dashboard"
 author: "Vivien Yuen"
 date: " `r format(Sys.time(), '%d %B, %Y %X')`"
 output: 
@@ -9,8 +9,24 @@ output:
 runtime: shiny
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  warning = FALSE, 
+  message = FALSE
+)
+```
+
+<!----
+```{r input_demo, eval=FALSE}
+# input <- list(
+#   age_group = "0 - 5"
+# )
+```
+---->
+
 ```{r global, include=FALSE}
-pacman::p_load(rio, here, tidyverse, flexdashboard, flextable, DT, janitor, pals, visNetwork, gtsummary, vtable, adegenet, shiny, tinytex, rmarkdown, paletteer)
+pacman::p_load(rio, here, tidyverse, flexdashboard, flextable, DT, janitor, pals, visNetwork, gtsummary, vtable, adegenet, shiny, tinytex, rmarkdown, paletteer, shinyobjects)
 
 source(here("Clean_01_Weekly_Stats.R"))
 source(here("Create_01_Weekly_Stats_Figures.R"))
@@ -26,15 +42,71 @@ theme_classic() %+replace%
 }
 ```
 
+```{r functions}
+nice_datatable <- function(df, caption = NULL, ...) {
+  df %>%
+    datatable(
+      extensions = c("Buttons", "FixedHeader", "Scroller"),
+      filter = "top",
+      rownames = FALSE,
+      escape = FALSE,
+      caption = caption,
+      options =
+        list(
+          dom = "Brtip",
+          deferRender = FALSE,
+          scrollY = 300,
+          scroller = TRUE,
+          scrollX = TRUE,
+          fixedHeader = FALSE,
+          buttons = c("copy", "csv", "excel", "pdf", "print"),
+          pageLength = nrow(df),
+          lengthChange = FALSE,
+          ...
+        )
+    )
+}
+```
+
 # Overview {.sidebar}
 
 This dashboard is produced by Viv and Michael for the 2023-24 TPL Season. 
 It aims to let players view a visualization of their game by game statistics and ...
 
 ```{r}
-selectInput("gameID", label = "Game to Analyze:",
+selectInput(inputId = "gameId", label = "Game to Analyze:",
             choices = weekly_data_clean$gameId, selected = '49211')
 
+filtered_game_data <- reactive({
+  if (input$gameId != "All") {
+    filter(weekly_data_clean, gameId %in% input$gameId)
+  } else {
+    weekly_data_clean
+  }
+}) 
+# 
+# selectInput(inputId = "homeTeam", label = "Home team:",
+#             choices = filtered_game_data()$teamId)
+# 
+# filtered_home_team_data <- reactive({
+#   if (input$homeTeam != "All") {
+#     filter(filtered_game_data(), teamId %in% input$homeTeam)
+#   } else {
+#     filtered_game_data()
+#   }
+# }) 
+# 
+# 
+# selectInput(inputId = "awayTeam", label = "Away team:",
+#             choices = filtered_game_data()$teamId)
+# 
+# filtered_away_team_data <- reactive({
+#   if (input$awayTeam != "All") {
+#     filter(filtered_game_data(), teamId %in% input$awayTeam)
+#   } else {
+#     filtered_game_data()
+#   }
+# }) 
 ```
 
 
@@ -43,22 +115,96 @@ selectInput("gameID", label = "Game to Analyze:",
 ## Column 1 {data-width=500}
 ### Game Involvement (Goal Contributions vs Other Touches)
 ```{r}
-# Subset data for relevant game
 
+plotly::renderPlotly({
+     plot_game_involvement <-
+         filtered_game_data() %>%
+         pivot_longer(cols = c(not_goal_contributions, goal_contributions), names_to = "GC", values_to = "Number") %>%
+         #factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
+         ggplot(aes(x = reorder(name, -Number, sum),
+                    y = Number,
+                    fill = GC)) +
+         geom_bar(position = "stack", stat = "identity") +
+         scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
+         labs(title = NULL) +
+         theme_classic() +
+         theme(title = element_blank(),
+             axis.title.x = element_blank(),
+             axis.title.y = element_blank(),
+             legend.text = element_text(size = 8),
+             axis.text.x = element_text(angle = 90),
+             legend.position = "none")
 
-# Game Involvement
-plot_game_involvement
+ plotly::ggplotly(plot_game_involvement)
+
+ })
 
 ```
 
 ### Contribution to Team
 ```{r}
-plot_team_contribution
+
+plotly::renderPlotly({
+    plot_team_contribution <- 
+        filtered_game_data() %>% 
+        
+        ggplot(aes(x = percent_of_team_touches,
+                   y = percent_of_team_contributions,
+                   label = name)) +
+    geom_point() +
+    labs(title = NULL,
+         x = "Percent of Team Touches",
+         y = "Percent of Team Goal Contributions") +
+    geom_point(color = "#589E40FF", fill = "#589E40FF") +
+    geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
+    theme_classic() +
+    theme(title = element_blank(),
+          legend.text = element_text(size = 8)) +
+    scale_x_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.1))) +
+    scale_y_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.1)))
+
+plotly::ggplotly(plot_team_contribution)
+
+})
+
 ```
 
 ### Turnovers to Touches
 ```{r}
-plot_turnovers
+plotly::renderPlotly({
+    plot_turnovers <- 
+        filtered_game_data() %>% 
+        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "Turnovers", values_to = "Number") %>%
+
+        ggplot(aes(x = reorder(name, -Number, sum),
+                   y = Number,
+                   fill = Turnovers)) +
+    geom_bar(position="stack", stat = "identity") +
+    scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
+    labs(title = NULL) +
+    theme_classic() +
+    theme(title = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.text.x = element_text(angle = 90),
+          legend.position = "none")
+
+plotly::ggplotly(plot_turnovers)
+
+})
+```
+
+### Home Team
+```{r home team datatable}
+DT::renderDataTable({
+  df <-
+    filtered_game_data() %>% select(name:other_touches)
+  
+  nice_datatable(df)
+})
 ```
 
 ## Column 2 {data-width=500}
@@ -78,6 +224,15 @@ plot_team_contribution
 plot_turnovers
 ```
 
+### Away Team
+```{r away team datatable}
+DT::renderDataTable({
+  df <-
+    filtered_game_data() %>% select(name:other_touches)
+  
+  nice_datatable(df)
+})
+```
 
 # Upcoming Matchups
 
