@@ -1,0 +1,84 @@
+---
+title: "TPL Weekly Stats Dashboard"
+author: "Vivien Yuen"
+date: " `r format(Sys.time(), '%d %B, %Y %X')`"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: scroll
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+pacman::p_load(rio, here, tidyverse, flexdashboard, flextable, DT, janitor, pals, visNetwork, gtsummary, vtable, adegenet, shiny, tinytex, rmarkdown, paletteer)
+
+source(here("Clean_01_Weekly_Stats.R"))
+source(here("Create_01_Weekly_Stats_Figures.R"))
+
+# plot theme
+my_theme <- function(){
+theme_classic() %+replace%
+    theme(axis.text.x   = element_text(size = 14, 
+                                 angle = 90), 
+          axis.text.y   = element_text(size = 14), 
+          panel.grid.major = element_line(colour = "lightgrey")
+    )
+}
+```
+
+# Overview {.sidebar}
+
+This dashboard is produced by Viv and Michael for the 2023-24 TPL Season. 
+It aims to let players view a visualization of their game by game statistics and ...
+
+```{r}
+selectInput("gameID", label = "Game to Analyze:",
+            choices = weekly_data_clean$gameId, selected = '49211')
+
+```
+
+
+# Week 1 {data-navmenu="Game Stats"}
+
+## Column 1 {data-width=500}
+### Game Involvement (Goal Contributions vs Other Touches)
+```{r}
+# Subset data for relevant game
+
+
+# Game Involvement
+plot_game_involvement
+
+```
+
+### Contribution to Team
+```{r}
+plot_team_contribution
+```
+
+### Turnovers to Touches
+```{r}
+plot_turnovers
+```
+
+## Column 2 {data-width=500}
+### Game Involvement (Goal Contributions vs Other Touches) 
+```{r}
+plot_game_involvement
+```
+
+### Contribution to Team 
+
+```{r}
+plot_team_contribution
+```
+
+### Turnovers to Touches 
+```{r}
+plot_turnovers
+```
+
+
+# Upcoming Matchups
+
+# Cumulative Season Stats
