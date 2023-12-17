@@ -84,35 +84,38 @@ filtered_game_data <- reactive({
     weekly_data_clean
   }
 }) 
-# 
-# selectInput(inputId = "homeTeam", label = "Home team:",
-#             choices = filtered_game_data()$teamId)
-# 
-# filtered_home_team_data <- reactive({
-#   if (input$homeTeam != "All") {
-#     filter(filtered_game_data(), teamId %in% input$homeTeam)
-#   } else {
-#     filtered_game_data()
-#   }
-# }) 
-# 
-# 
-# selectInput(inputId = "awayTeam", label = "Away team:",
-#             choices = filtered_game_data()$teamId)
-# 
-# filtered_away_team_data <- reactive({
-#   if (input$awayTeam != "All") {
-#     filter(filtered_game_data(), teamId %in% input$awayTeam)
-#   } else {
-#     filtered_game_data()
-#   }
-# }) 
+
+homeTeam_df <- reactive(
+    filter(filtered_game_data(), teamId == min(teamId))
+)
+
+awayTeam_df <- reactive(
+    filter(filtered_game_data(), teamId == max(teamId))
+)
+
 ```
 
 
 # Week 1 {data-navmenu="Game Stats"}
 
 ## Column 1 {data-width=500}
+
+### Home Team ID
+```{r}
+
+renderValueBox({
+  homeTeamValue <- homeTeam_df()
+  flexdashboard::valueBox(
+    value = homeTeamValue$teamId[[1]],
+    caption = "Home Team Data",
+    icon = "fas fa-paw",
+    color = "grey"
+  )
+})
+
+
+```
+
 ### Game Involvement (Goal Contributions vs Other Touches)
 ```{r}
 
@@ -200,14 +203,30 @@ plotly::ggplotly(plot_turnovers)
 ### Home Team
 ```{r home team datatable}
 DT::renderDataTable({
-  df <-
-    filtered_game_data() %>% select(name:other_touches)
+  df1 <-
+    homeTeam_df() %>% select(name:other_touches)
   
-  nice_datatable(df)
+  nice_datatable(df1)
 })
 ```
 
 ## Column 2 {data-width=500}
+### Home Team ID
+```{r}
+
+renderValueBox({
+  awayTeamValue <- awayTeam_df()
+  flexdashboard::valueBox(
+    value = awayTeamValue$teamId[[1]],
+    caption = "Away Team Data",
+    icon = "fas fa-paw",
+    color = "grey"
+  )
+})
+
+
+```
+
 ### Game Involvement (Goal Contributions vs Other Touches) 
 ```{r}
 plot_game_involvement
@@ -227,10 +246,10 @@ plot_turnovers
 ### Away Team
 ```{r away team datatable}
 DT::renderDataTable({
-  df <-
-    filtered_game_data() %>% select(name:other_touches)
+  df2 <-
+    awayTeam_df() %>% select(c(name:other_touches))
   
-  nice_datatable(df)
+  nice_datatable(df2)
 })
 ```
 
