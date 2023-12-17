@@ -31,6 +31,11 @@ for (game in games) {
     game_id_to_date$set(game$id, game$date)
 }
 
+game_id_to_game = dict()
+for (game in games) {
+    game_id_to_game$set(game$id, game)
+}
+
 game_dict <- dict()
 for (game in games) {
     gameId <- game$id
@@ -52,6 +57,8 @@ for (game in games) {
 df <- data.frame(gameId=character(),
                  playerId=character(),
                  teamId=character(),
+                 homeTeamId=character(),
+                 awayTeamId=character(),
                  name=character(),
                  date=character(),
                  Goal=integer(),
@@ -71,6 +78,8 @@ for (game_team in game_dict$keys()) {
             df[nrow(df) + 1,] <-c( event$gameId,
                                    event$player$id,
                                    event$teamId,
+                                   game_id_to_game$get(game_id)$homeTeamId,
+                                   game_id_to_game$get(game_id)$awayTeamId,
                                    event$player$playerName,
                                    game_id_to_date$get(game_id),
                                    as.integer(0),
@@ -147,4 +156,17 @@ for (game_team in game_dict$keys()) {
 
 
 write_csv(df, "Data/Weekly Individual Game Stats/per_game_stats.csv")
+
+df2 <- data.frame(gameId=character(),
+                 homeTeamId=character(),
+                 awayTeamId=character()
+                 )
+for (game in games) {
+    df2[nrow(df2) + 1,] <-c(game$id,
+                           game$homeTeamId,
+                           game$awayTeamId
+                           )
+}
+write_csv(df2, "Data/games.csv")
+
 # gameId,id,name,2nd_assists,assists,goals,blocks,tas,drops,touches
