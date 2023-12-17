@@ -1,4 +1,4 @@
-gameId,playerId,teamId,homeTeamId,awayTeamId,name,date,Goal,Assist,Assist2,D,TA,Drop,passes
+gameId,playerId,teamId,homeTeamId,awayTeamId,name,date,goals,assists,2nd_assists,blocks,tas,drops,touches
 49211,28589,9677,9677,9668,Vikki Shimoda,"October 18, 2023",3,0,0,1,1,0,7
 49211,61149,9677,9677,9668,Alec Zhao,"October 18, 2023",2,0,0,0,1,0,3
 49211,45782,9677,9677,9668,Brittany Heath,"October 18, 2023",0,1,1,0,1,0,8

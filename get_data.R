@@ -154,7 +154,16 @@ for (game_team in game_dict$keys()) {
     }
 }
 
-
+df <- df %>%
+    dplyr::rename(
+        goals = Goal,
+        assists = Assist,
+        '2nd_assists' = Assist2,
+        tas = TA,
+        blocks = D,
+        drops = Drop,
+        touches = passes
+    )
 write_csv(df, "Data/Weekly Individual Game Stats/per_game_stats.csv")
 
 df2 <- data.frame(gameId=character(),
