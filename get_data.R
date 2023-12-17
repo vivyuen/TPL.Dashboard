@@ -26,6 +26,11 @@ resp <- req_perform(req)
 
 games <- resp_body_json(resp)
 
+game_id_to_date = dict()
+for (game in games) {
+    game_id_to_date$set(game$id, game$date)
+}
+
 game_dict <- dict()
 for (game in games) {
     gameId <- game$id
@@ -43,12 +48,12 @@ for (game in games) {
     game_dict$set(paste(gameId,awayTeamId, sep ='/'),resp_body_json(awayGameResp))
 }
 
-game_events_sequence <- game_dict$get(paste(gameId,awayTeamId, sep ='/'))
-stat_table <-data.frame()
 
 df <- data.frame(gameId=character(),
                  playerId=character(),
                  teamId=character(),
+                 name=character(),
+                 date=character(),
                  Goal=integer(),
                  Assist=integer(),
                  Assist2=integer(),
@@ -57,71 +62,89 @@ df <- data.frame(gameId=character(),
                  Drop=integer(),
                  passes=integer())
 
-for (event in game_events_sequence) {
-    if (nrow(df %>% filter(gameId == event$gameId, playerId == event$player$id, teamId==event$teamId)) == 0) {
-        df[nrow(df) + 1,] <-c( event$gameId,
-                        event$player$id,
-                        event$teamId,
-                        as.integer(0),
-                        as.integer(0),
-                        as.integer(0),
-                        as.integer(0),
-                        as.integer(0),
-                        as.integer(0),
-                        as.integer(0)
-                       )
-    }
+for (game_team in game_dict$keys()) {
+    game_id = str_split(a, "/")[[1]][1]
+    team_id = str_split(a, "/")[[1]][2]
+    game_events_sequence = game_dict$get(game_team)
+    for (event in game_events_sequence) {
+        if (nrow(df %>% filter(gameId == event$gameId, playerId == event$player$id, teamId==event$teamId)) == 0) {
+            df[nrow(df) + 1,] <-c( event$gameId,
+                                   event$player$id,
+                                   event$teamId,
+                                   event$player$playerName,
+                                   game_id_to_date$get(game_id),
+                                   as.integer(0),
+                                   as.integer(0),
+                                   as.integer(0),
+                                   as.integer(0),
+                                   as.integer(0),
+                                   as.integer(0),
+                                   as.integer(0)
+            )
+        }
 
-    row = df %>% filter(gameId == event$gameId, playerId == event$player$id, teamId==event$teamId)
-    if (event$eventType == "Goal" ) {
-        df <- df %>% mutate(
-            Goal = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["Goal"]]) + 1
+        if (event$eventType == "Goal" ) {
+            df <- df %>% mutate(
+                Goal = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(Goal) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(Goal)
+                )
             )
-        )
-    }
-    if (event$eventType == "Assist" ) {
-        df <- df %>% mutate(
-            Assist = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["Assist"]]) + 1
+        }
+        if (event$eventType == "Assist" ) {
+            df <- df %>% mutate(
+                Assist = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(Assist) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(Assist)
+
+                )
             )
-        )
-    }
-    if (event$eventType == "2nd Assist" ) {
-        df <- df %>% mutate(
-            Assist2 = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["Assist2"]]) + 1
+        }
+        if (event$eventType == "2nd Assist" ) {
+            df <- df %>% mutate(
+                Assist2 = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(Assist2) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(Assist2)
+
+                )
             )
-        )
-    }
-    if (event$eventType == "D" ) {
-        df <- df %>% mutate(
-            D = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["D"]]) + 1
+        }
+        if (event$eventType == "D" ) {
+            df <- df %>% mutate(
+                D = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(D) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(D)
+                )
             )
-        )
-    }
-    if (event$eventType == "TA" ) {
-        df <- df %>% mutate(
-            TA = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["TA"]]) + 1
+        }
+        if (event$eventType == "TA" ) {
+            df <- df %>% mutate(
+                TA = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(TA) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(TA)
+                )
             )
-        )
-    }
-    if (event$eventType == "Drop" ) {
-        df <- df %>% mutate(
-            Drop = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["Drop"]]) + 1
+        }
+        if (event$eventType == "Drop" ) {
+            df <- df %>% mutate(
+                Drop = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(Drop) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(Drop)
+
+                )
             )
-        )       }
-    if (event$eventType == "" ) {
-        df <- df %>% mutate(
-            passes = case_when(
-                (gameId == event$gameId & playerId == event$player$id) ~ as.integer(row[["passes"]]) + 1
+        }
+        if (event$eventType == "" ) {
+            df <- df %>% mutate(
+                passes = case_when(
+                    (gameId == event$gameId & playerId == event$player$id) ~ as.integer(passes) + 1,
+                    (!(gameId == event$gameId & playerId == event$player$id)) ~ as.integer(passes)
+                )
             )
-        )
+        }
     }
 }
 
-df
+
+write_csv(df, "Data/Weekly Individual Game Stats/per_game_stats.csv")
 # gameId,id,name,2nd_assists,assists,goals,blocks,tas,drops,touches
