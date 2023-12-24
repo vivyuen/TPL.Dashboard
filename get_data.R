@@ -70,8 +70,8 @@ df <- data.frame(gameId=character(),
                  passes=integer())
 
 for (game_team in game_dict$keys()) {
-    game_id = str_split(a, "/")[[1]][1]
-    team_id = str_split(a, "/")[[1]][2]
+    game_id = str_split(game_team, "/")[[1]][1]
+    team_id = str_split(game_team, "/")[[1]][2]
     game_events_sequence = game_dict$get(game_team)
     for (event in game_events_sequence) {
         if (nrow(df %>% filter(gameId == event$gameId, playerId == event$player$id, teamId==event$teamId)) == 0) {
