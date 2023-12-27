@@ -26,7 +26,7 @@ set.seed(12345)
 
 # Load data
 # Primary sheet
-weekly_data <- import(here("data/Weekly Individual Game Stats/Week 8.csv"))
+weekly_data <- import(here("data/Weekly Individual Game Stats/per_game_stats.csv"))
 weekly_data_clean <- weekly_data
 
 # Get list of variables
