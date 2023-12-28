@@ -78,8 +78,10 @@ It aims to let players see a visualization of their game by game statistics and 
 selectInput(inputId = "date", label = "Week:",
             choices = weekly_data_clean$date)
 
+uniqueGameIds <- unique(weekly_data_clean[["gameId"]])
+
 selectInput(inputId = "gameId", label = "Game to Analyze:",
-            choices = weekly_data_clean$gameId)
+            choices = uniqueGameIds)
 
 filtered_game_data <- reactive(
     filter(weekly_data_clean, gameId %in% input$gameId)
