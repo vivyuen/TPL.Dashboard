@@ -43,6 +43,7 @@ weekly_data_clean <- weekly_data %>%
 
 # Create Variables  ----
 
+# Metrics
 weekly_data_clean <- weekly_data_clean %>%
     arrange(gameId, teamId) %>%
     mutate(
@@ -63,6 +64,8 @@ weekly_data_clean <- weekly_data_clean %>%
     ) %>%
     ungroup()
 
+# Create week_number column
+
 weekly_data_clean <- weekly_data_clean %>%
     mutate(date = mdy(date)) %>%
     arrange(date) %>%
@@ -72,84 +75,43 @@ weekly_data_clean <- weekly_data_clean %>%
 
 # Apply variable and value labels ----
 
-# weekly_data_clean <- weekly_data_clean %>%
-#     apply_labels(teamId = "Team",
-#                  teamId = c("🔥 FaulkenHoeit 451 📚" = 9673,
-#                             "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-#                             "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-#                             "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-#                             "ISBeN" = 9668,
-#                             "The Children of Zune" = 9677,
-#                             "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-#                             "MARTgaret CATwood" = 9669,
-#                             "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-#                             "Tam And A Mat" = 9671),
-#                  homeTeamId = "Home Team",
-#                  homeTeamId = c("🔥 FaulkenHoeit 451 📚" = 9673,
-#                                "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-#                                "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-#                                "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-#                                "ISBeN" = 9668,
-#                                "The Children of Zune" = 9677,
-#                                "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-#                                "MARTgaret CATwood" = 9669,
-#                                "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-#                                "Tam And A Mat" = 9671),
-#                  awayTeamId = "Away Team",
-#                  awayTeamId = c("🔥 FaulkenHoeit 451 📚" = 9673,
-#                                 "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-#                                 "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-#                                 "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-#                                 "ISBeN" = 9668,
-#                                 "The Children of Zune" = 9677,
-#                                 "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-#                                 "MARTgaret CATwood" = 9669,
-#                                 "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-#                                 "Tam And A Mat" = 9671),
-#     )
+teamNames = c(
+    "🔥 FaulkenHoeit 451 📚" = 9673,
+    "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
+    "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
+    "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
+    "ISBeN" = 9668,
+    "The Children of Zune" = 9677,
+    "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
+    "MARTgaret CATwood" = 9669,
+    "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
+    "Tam And A Mat" = 9671
+)
 
+
+# Create gameId labels
+
+weekly_data_clean <- weekly_data_clean %>%
+    mutate(gameIdNames = paste("Week", week_number, "-", homeTeamId, "vs.", awayTeamId, sep = " ")) %>%
+    arrange(desc(week_number))
+
+zevGameId <- unique(weekly_data_clean$gameId)
+zevGameName <- unique(weekly_data_clean$gameIdNames)
+
+zevList <- setNames(zevGameId, zevGameName)
+
+gameIdNames <- list(
+    gameId = unique(weekly_data_clean$gameId),
+    gameName = unique(weekly_data_clean$gameIdNames)
+)
+
+# Apply labels
 
 weekly_data_clean <- weekly_data_clean %>%
     apply_labels(
-        teamId = "Team",
-        homeTeamId = "Home Team",
-        awayTeamId = "Away Team",
-        teamId = c(
-            "🔥 FaulkenHoeit 451 📚" = 9673,
-            "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-            "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-            "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-            "ISBeN" = 9668,
-            "The Children of Zune" = 9677,
-            "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-            "MARTgaret CATwood" = 9669,
-            "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-            "Tam And A Mat" = 9671
-        ),
-        homeTeamId = c(
-            "🔥 FaulkenHoeit 451 📚" = 9673,
-            "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-            "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-            "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-            "ISBeN" = 9668,
-            "The Children of Zune" = 9677,
-            "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-            "MARTgaret CATwood" = 9669,
-            "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-            "Tam And A Mat" = 9671
-        ),
-        awayTeamId = c(
-            "🔥 FaulkenHoeit 451 📚" = 9673,
-            "📚📖 EncycLampedia 🤓 BriTangica 📖📚" = 9672,
-            "🐒🤔💭Kyra-uos George and the Nam with the Yellow Hat 👷‍♂️👷‍♂️👷‍♂️ at the Aquarium 🐧🐧🐧" = 9675,
-            "The CAT 🐈 in the 🧢 hATTANACH" = 9670,
-            "ISBeN" = 9668,
-            "The Children of Zune" = 9677,
-            "🤔🌌👽 Hitchhucker’s Vol. 3: Mike, the Yueniverse and Everything 🚀📚🤔" = 9676,
-            "MARTgaret CATwood" = 9669,
-            "⚡Harry Peter⚡ and the Jaymber of Secrets🪄🐍🗡📓" = 9674,
-            "Tam And A Mat" = 9671
-        )
+        teamId = teamNames,
+        homeTeamId = teamNames,
+        awayTeamId = teamNames
     )
 
 
