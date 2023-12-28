@@ -71,7 +71,7 @@ nice_datatable <- function(df, caption = NULL, ...) {
 # Overview {.sidebar}
 
 This dashboard is produced by Viv and Michael for the 2023-24 TPL Season. 
-It aims to let players view a visualization of their game by game statistics and ...
+It aims to let players see a visualization of their game by game statistics and ...
 
 ```{r}
 
@@ -107,12 +107,26 @@ renderValueBox({
   homeTeamValue <- homeTeam_df()
   flexdashboard::valueBox(
     value = homeTeamValue$homeTeamId[[1]],
-    caption = "Home Team Data",
-    icon = "fas fa-paw",
-    color = "grey"
+    caption = "Home Team",
+    icon = "fas fa-shirt",
+    color = "#881C00FF"
   )
 })
 
+```
+
+### Home Team Score
+```{r}
+
+renderValueBox({
+  homeTeamValue <- homeTeam_df()
+  flexdashboard::valueBox(
+    value = sum(homeTeam_df()$goals),
+    caption = "Goals",
+    icon = "far fa-futbol",
+    color = "grey"
+  )
+})
 
 ```
 
@@ -122,8 +136,9 @@ renderValueBox({
 plotly::renderPlotly({
      plot_game_involvement <-
          homeTeam_df() %>%
-         pivot_longer(cols = c(not_goal_contributions, goal_contributions), names_to = "GC", values_to = "Number") %>%
-         #factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
+         pivot_longer(cols = c(goal_contributions, not_goal_contributions), names_to = "GC", values_to = "Number") %>%
+         # arrange(sum(goal_contributions, not_goal_contributions), goal_contributions) %>% 
+         # factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
          ggplot(aes(x = reorder(name, -Number, sum),
                     y = Number,
                     fill = GC)) +
@@ -139,7 +154,7 @@ plotly::renderPlotly({
              axis.text.x = element_text(angle = 90),
              legend.position = "none")
 
- plotly::ggplotly(plot_game_involvement)
+ plotly::ggplotly(plot_game_involvement, tooltip = c("y", "fill"))
 
  })
 
@@ -160,6 +175,9 @@ plotly::renderPlotly({
          x = "Percent of Team Touches",
          y = "Percent of Team Goal Contributions") +
     geom_point(color = "#589E40FF", fill = "#589E40FF") +
+    geom_text(aes(label=name), 
+              size=3, 
+              nudge_y = 0.005) +
     geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
     theme_classic() +
     theme(title = element_blank(),
@@ -171,7 +189,7 @@ plotly::renderPlotly({
     scale_y_continuous(labels = scales::percent_format(scale = 100),
                        expand = expansion(mult = c(0.05, 0.1)))
 
-plotly::ggplotly(plot_team_contribution)
+plotly::ggplotly(plot_team_contribution, tooltip = c("x", "y"))
 
 })
 
@@ -199,7 +217,7 @@ plotly::renderPlotly({
           axis.text.x = element_text(angle = 90),
           legend.position = "none")
 
-plotly::ggplotly(plot_turnovers)
+plotly::ggplotly(plot_turnovers, tooltip = c("y", "fill"))
 
 })
 ```
@@ -215,19 +233,34 @@ DT::renderDataTable({
 ```
 
 ## Column 2 {data-width=500}
-### Home Team ID
+### Away Team ID
 ```{r}
 
 renderValueBox({
   awayTeamValue <- awayTeam_df()
   flexdashboard::valueBox(
     value = awayTeamValue$awayTeamId[[1]],
-    caption = "Away Team Data",
-    icon = "fas fa-paw",
-    color = "grey"
+    caption = "Away Team",
+    icon = "fas fa-people-group",
+    color = "#172869FF"
   )
 })
 
+
+```
+
+### Away Team Score
+```{r}
+
+renderValueBox({
+  awayTeamValue <- awayTeam_df()
+  flexdashboard::valueBox(
+    value = sum(awayTeam_df()$goals),
+    caption = "Goals",
+    icon = "far fa-futbol",
+    color = "grey"
+  )
+})
 
 ```
 
@@ -253,7 +286,7 @@ plotly::renderPlotly({
              axis.text.x = element_text(angle = 90),
              legend.position = "none")
 
- plotly::ggplotly(plot_game_involvement)
+ plotly::ggplotly(plot_game_involvement, tooltip = c("y", "fill"))
 
  })
 ```
@@ -274,6 +307,7 @@ plotly::renderPlotly({
          x = "Percent of Team Touches",
          y = "Percent of Team Goal Contributions") +
     geom_point(color = "#589E40FF", fill = "#589E40FF") +
+    geom_text(aes(label=name), size=3, nudge_y = 0.005) +
     geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
     theme_classic() +
     theme(title = element_blank(),
@@ -283,7 +317,7 @@ plotly::renderPlotly({
     scale_x_continuous(labels = scales::percent_format(scale = 100),
                        expand = expansion(mult = c(0.05, 0.1))) +
     scale_y_continuous(labels = scales::percent_format(scale = 100),
-                       expand = expansion(mult = c(0.05, 0.1)))
+                       expand = expansion(mult = c(0.05, 0.005)))
 
 plotly::ggplotly(plot_team_contribution)
 
@@ -312,7 +346,7 @@ plotly::renderPlotly({
           axis.text.x = element_text(angle = 90),
           legend.position = "none")
 
-plotly::ggplotly(plot_turnovers)
+plotly::ggplotly(plot_turnovers, tooltip = c("y", "fill"))
 
 })
 ```
@@ -326,6 +360,10 @@ DT::renderDataTable({
   nice_datatable(df2)
 })
 ```
+
+# Week 2 {data-navmenu="Game Stats"}
+
+talkjsdflksajdf
 
 # Upcoming Matchups
 
