@@ -5,26 +5,9 @@
 
 # Set Up -----------------------------------------------------------------------
 # Load packages
-pacman::p_load(
-    vtable,
-    rio,
-    here,
-    janitor,
-    lubridate,
-    epikit,
-    tidyverse,
-    skimr,
-    visdat,
-    tidyxl,
-    gtsummary,
-    viridis,
-    scales,
-    gt,
-    ggplot2,
-    paletteer,
-    ggrepel
-)
 
+create_weekly_stats_figures <- function(weekly_data_clen)
+{
 set.seed(12345)
 
 pal <- paletteer_d("DresdenColor::paired")
@@ -94,3 +77,4 @@ plot_team_contribution <- ggplot(subset(weekly_data_clean, gameId %in% "49212"),
 
 plot_team_contribution
 
+}

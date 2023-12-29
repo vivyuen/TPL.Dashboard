@@ -1,0 +1,33 @@
+Package: TPL.Dashboard
+Title: TPL Dashboard
+Version: 0.0.0.9000
+Authors@R: 
+    person("Viv", "Yuen", , "vivien.ly.94@gmail.com", role = c("aut", "cre")
+Description: Various tools and shiny dashboards for analyzing and visualizing Toronto Party League ultimate frisbee data
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Imports:
+    pacman,
+    dplyr,
+    vtable,
+    vtable,
+    rio,
+    here,
+    janitor,
+    lubridate,
+    epikit,
+    tidyverse,
+    skimr,
+    visdat,
+    tidyxl,
+    gtsummary,
+    viridis,
+    scales,
+    gt,
+    expss
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)
+LazyData: true
