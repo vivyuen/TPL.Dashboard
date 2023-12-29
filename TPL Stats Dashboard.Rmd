@@ -75,13 +75,8 @@ It aims to let players see a visualization of their game by game statistics and 
 
 ```{r}
 
-selectInput(inputId = "date", label = "Week:",
-            choices = weekly_data_clean$date)
-
-uniqueGameIds <- unique(weekly_data_clean[["gameId"]])
-
 selectInput(inputId = "gameId", label = "Game to Analyze:",
-            choices = uniqueGameIds)
+            choices = zevList)
 
 filtered_game_data <- reactive(
     filter(weekly_data_clean, gameId %in% input$gameId)
@@ -107,8 +102,12 @@ awayTeam_df <- reactive(
 
 renderValueBox({
   homeTeamValue <- homeTeam_df()
+  
+  shortened_value <- substr(homeTeamValue$homeTeamId[[1]], 1, 25)
+  display_value <- ifelse(nchar(homeTeamValue$homeTeamId[[1]]) > 25, paste0(shortened_value, "..."), shortened_value)
+  
   flexdashboard::valueBox(
-    value = homeTeamValue$homeTeamId[[1]],
+    value = display_value,
     caption = "Home Team",
     icon = "fas fa-shirt",
     color = "#881C00FF"
@@ -202,11 +201,11 @@ plotly::ggplotly(plot_team_contribution, tooltip = c("x", "y"))
 plotly::renderPlotly({
     plot_turnovers <- 
         homeTeam_df() %>% 
-        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "Turnovers", values_to = "Number") %>%
+        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
 
         ggplot(aes(x = reorder(name, -Number, sum),
                    y = Number,
-                   fill = Turnovers)) +
+                   fill = TO)) +
     geom_bar(position="stack", stat = "identity") +
     scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
     labs(title = NULL,
@@ -240,14 +239,17 @@ DT::renderDataTable({
 
 renderValueBox({
   awayTeamValue <- awayTeam_df()
+  
+  shortened_value <- substr(awayTeamValue$awayTeamId[[1]], 1, 25)
+  display_value <- ifelse(nchar(awayTeamValue$awayTeamId[[1]]) > 25, paste0(shortened_value, "..."), shortened_value)
+  
   flexdashboard::valueBox(
-    value = awayTeamValue$awayTeamId[[1]],
+    value = display_value,
     caption = "Away Team",
     icon = "fas fa-people-group",
     color = "#172869FF"
   )
 })
-
 
 ```
 
@@ -331,11 +333,11 @@ plotly::ggplotly(plot_team_contribution)
 plotly::renderPlotly({
     plot_turnovers <- 
         awayTeam_df() %>% 
-        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "Turnovers", values_to = "Number") %>%
+        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
 
         ggplot(aes(x = reorder(name, -Number, sum),
                    y = Number,
-                   fill = Turnovers)) +
+                   fill = TO)) +
     geom_bar(position="stack", stat = "identity") +
     scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
     labs(title = NULL,
