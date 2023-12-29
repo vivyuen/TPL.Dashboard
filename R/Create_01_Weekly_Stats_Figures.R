@@ -6,7 +6,7 @@
 # Set Up -----------------------------------------------------------------------
 # Load packages
 
-create_weekly_stats_figures <- function(weekly_data_clen)
+create_weekly_stats_figures <- function(weekly_data_clean)
 {
 set.seed(12345)
 

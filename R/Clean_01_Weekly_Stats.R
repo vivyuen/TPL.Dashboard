@@ -7,6 +7,7 @@
 # Load packages
 clean_weekly_stats <- function()
 {
+    library(dplyr)
     set.seed(12345)
 
     # Load data
@@ -16,7 +17,7 @@ clean_weekly_stats <- function()
 
 
     # Get list of variables
-    vtable(weekly_data, lush = TRUE)
+    vtable::vtable(weekly_data, lush = TRUE)
 
     weekly_data_clean <- weekly_data %>%
         dplyr::rename(
@@ -29,8 +30,8 @@ clean_weekly_stats <- function()
 
     # Metrics
     weekly_data_clean <- weekly_data_clean %>%
-        arrange(gameId, teamId) %>%
-        mutate(
+        dplyr::arrange(gameId, teamId) %>%
+        dplyr::mutate(
             all_touches = other_touches + goals + assists + second_assists + drops,
             goal_contributions = goals + assists + second_assists,
             not_goal_contributions = all_touches - goal_contributions,
@@ -41,20 +42,20 @@ clean_weekly_stats <- function()
         )
 
     weekly_data_clean <- weekly_data_clean %>%
-        group_by(gameId, teamId) %>%
-        mutate(
+        dplyr::group_by(gameId, teamId) %>%
+        dplyr::mutate(
             percent_of_team_touches = all_touches / sum(all_touches),
             percent_of_team_contributions = goal_contributions / sum(goal_contributions)
         ) %>%
-        ungroup()
+        dplyr::ungroup()
 
     # Create week_number column
 
     weekly_data_clean <- weekly_data_clean %>%
-        mutate(date = mdy(date)) %>%
-        arrange(date) %>%
-        group_by(year_week = format(date, "%Y-%U")) %>%
-        mutate(week_number = cur_group_id())
+        dplyr::mutate(date = lubridate::mdy(date)) %>%
+        dplyr::arrange(date) %>%
+        dplyr::group_by(year_week = format(date, "%Y-%U")) %>%
+        dplyr::mutate(week_number = cur_group_id())
 
 
     # Apply variable and value labels ----
@@ -76,8 +77,8 @@ clean_weekly_stats <- function()
     # Create gameId labels
 
     weekly_data_clean <- weekly_data_clean %>%
-        mutate(gameIdNames = paste("Week", week_number, "-", homeTeamId, "vs.", awayTeamId, sep = " ")) %>%
-        arrange(desc(week_number))
+        dplyr::mutate(gameIdNames = paste("Week", week_number, "-", homeTeamId, "vs.", awayTeamId, sep = " ")) %>%
+        dplyr::arrange(desc(week_number))
 
     zevGameId <- unique(weekly_data_clean$gameId)
     zevGameName <- unique(weekly_data_clean$gameIdNames)
