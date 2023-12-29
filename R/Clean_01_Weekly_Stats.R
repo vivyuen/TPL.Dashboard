@@ -80,22 +80,12 @@ clean_weekly_stats <- function()
         dplyr::mutate(gameIdNames = paste("Week", week_number, "-", homeTeamId, "vs.", awayTeamId, sep = " ")) %>%
         dplyr::arrange(desc(week_number))
 
-    zevGameId <- unique(weekly_data_clean$gameId)
-    zevGameName <- unique(weekly_data_clean$gameIdNames)
-
-    zevList <- setNames(zevGameId, zevGameName)
-
-    gameIdNames <- list(
-        gameId = unique(weekly_data_clean$gameId),
-        gameName = unique(weekly_data_clean$gameIdNames)
-    )
-
     # Apply labels
-
     weekly_data_clean <- weekly_data_clean %>%
-        apply_labels(
+        expss::apply_labels(
             teamId = teamNames,
             homeTeamId = teamNames,
             awayTeamId = teamNames
         )
+    return(weekly_data_clean)
 }

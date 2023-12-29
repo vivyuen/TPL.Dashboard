@@ -26,14 +26,10 @@ knitr::opts_chunk$set(
 ---->
 
 ```{r global, include=FALSE}
-pacman::p_load(rio, here, tidyverse, flexdashboard, flextable, DT, janitor, pals, visNetwork, gtsummary, vtable, adegenet, shiny, tinytex, rmarkdown, paletteer, shinyobjects)
-
-source(here("Clean_01_Weekly_Stats.R"))
-source(here("Create_01_Weekly_Stats_Figures.R"))
-
+library(ggplot2)
 # plot theme
 my_theme <- function(){
-theme_classic() %+replace%
+ggplot2::theme_classic() %+replace%
     theme(axis.text.x   = element_text(size = 14, 
                                  angle = 90), 
           axis.text.y   = element_text(size = 14), 
@@ -45,7 +41,7 @@ theme_classic() %+replace%
 ```{r functions}
 nice_datatable <- function(df, caption = NULL, ...) {
   df %>%
-    datatable(
+    DT::datatable(
       extensions = c("Buttons", "FixedHeader", "Scroller"),
       filter = "top",
       rownames = FALSE,
@@ -75,6 +71,19 @@ It aims to let players see a visualization of their game by game statistics and 
 
 ```{r}
 
+pkgload::load_all("C:/Users/tyler/Documents/R Workspace/TPL.Dashboard")
+
+weekly_data_clean = clean_weekly_stats()
+plot_game_involvement = create_plot_game_involvement(weekly_data_clean)
+plot_turnovers = create_plot_turnovers(weekly_data_clean)
+plot_team_contribution = create_plot_team_contribution(weekly_data_clean)
+
+gameIdNames <- list(
+        gameId = unique(weekly_data_clean$gameId),
+        gameName = unique(weekly_data_clean$gameIdNames)
+    )
+zevList <- setNames(unique(weekly_data_clean$gameId), unique(weekly_data_clean$gameIdNames))
+
 selectInput(inputId = "gameId", label = "Game to Analyze:",
             choices = zevList)
 
@@ -100,7 +109,7 @@ awayTeam_df <- reactive(
 ### Home Team ID
 ```{r}
 
-renderValueBox({
+flexdashboard::renderValueBox({
   homeTeamValue <- homeTeam_df()
   
   shortened_value <- substr(homeTeamValue$homeTeamId[[1]], 1, 25)
@@ -119,7 +128,7 @@ renderValueBox({
 ### Home Team Score
 ```{r}
 
-renderValueBox({
+flexdashboard::renderValueBox({
   homeTeamValue <- homeTeam_df()
   flexdashboard::valueBox(
     value = sum(homeTeam_df()$goals),
@@ -137,17 +146,17 @@ renderValueBox({
 plotly::renderPlotly({
      plot_game_involvement <-
          homeTeam_df() %>%
-         pivot_longer(cols = c(goal_contributions, not_goal_contributions), names_to = "GC", values_to = "Number") %>%
+         tidyr::pivot_longer(cols = c(goal_contributions, not_goal_contributions), names_to = "GC", values_to = "Number") %>%
          # arrange(sum(goal_contributions, not_goal_contributions), goal_contributions) %>% 
          # factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
-         ggplot(aes(x = reorder(name, -Number, sum),
+         ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
                     y = Number,
                     fill = GC)) +
-         geom_bar(position = "stack", stat = "identity") +
-         scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
-         labs(title = NULL, 
+         ggplot2::geom_bar(position = "stack", stat = "identity") +
+         ggplot2::scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
+         ggplot2::labs(title = NULL, 
               y = "Touches") +
-         theme_classic() +
+         ggplot2::theme_classic() +
          theme(title = element_blank(),
              axis.title.x = element_blank(),
              axis.title.y = element_text(size = 8),
@@ -168,19 +177,19 @@ plotly::renderPlotly({
     plot_team_contribution <- 
         homeTeam_df() %>% 
         
-        ggplot(aes(x = percent_of_team_touches,
+        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
                    y = percent_of_team_contributions,
                    label = name)) +
     geom_point() +
-    labs(title = NULL,
+    ggplot2::labs(title = NULL,
          x = "Percent of Team Touches",
          y = "Percent of Team Goal Contributions") +
     geom_point(color = "#589E40FF", fill = "#589E40FF") +
-    geom_text(aes(label=name), 
+    geom_text(ggplot2::aes(label=name), 
               size=3, 
               nudge_y = 0.005) +
-    geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
-    theme_classic() +
+    ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
+    ggplot2::theme_classic() +
     theme(title = element_blank(),
           legend.text = element_text(size = 8),
           axis.title.x = element_text(size = 8),
@@ -201,16 +210,16 @@ plotly::ggplotly(plot_team_contribution, tooltip = c("x", "y"))
 plotly::renderPlotly({
     plot_turnovers <- 
         homeTeam_df() %>% 
-        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
+        tidyr::pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
 
-        ggplot(aes(x = reorder(name, -Number, sum),
+        ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
                    y = Number,
                    fill = TO)) +
-    geom_bar(position="stack", stat = "identity") +
-    scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
-    labs(title = NULL,
+    ggplot2::geom_bar(position="stack", stat = "identity") +
+    ggplot2::scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
+    ggplot2::labs(title = NULL,
          y = "Touches") +
-    theme_classic() +
+    ggplot2::theme_classic() +
     theme(title = element_blank(),
           axis.title.x = element_blank(),
           axis.title.y = element_text(size = 8),
@@ -237,7 +246,7 @@ DT::renderDataTable({
 ### Away Team ID
 ```{r}
 
-renderValueBox({
+flexdashboard::renderValueBox({
   awayTeamValue <- awayTeam_df()
   
   shortened_value <- substr(awayTeamValue$awayTeamId[[1]], 1, 25)
@@ -256,7 +265,7 @@ renderValueBox({
 ### Away Team Score
 ```{r}
 
-renderValueBox({
+flexdashboard::renderValueBox({
   awayTeamValue <- awayTeam_df()
   flexdashboard::valueBox(
     value = sum(awayTeam_df()$goals),
@@ -273,16 +282,16 @@ renderValueBox({
 plotly::renderPlotly({
      plot_game_involvement <-
          awayTeam_df() %>%
-         pivot_longer(cols = c(not_goal_contributions, goal_contributions), names_to = "GC", values_to = "Number") %>%
+         tidyr::pivot_longer(cols = c(not_goal_contributions, goal_contributions), names_to = "GC", values_to = "Number") %>%
          #factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
-         ggplot(aes(x = reorder(name, -Number, sum),
+         ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
                     y = Number,
                     fill = GC)) +
-         geom_bar(position = "stack", stat = "identity") +
-         scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
-         labs(title = NULL,
+         ggplot2::geom_bar(position = "stack", stat = "identity") +
+         ggplot2::scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
+         ggplot2::labs(title = NULL,
               y = "Touches") +
-         theme_classic() +
+         ggplot2::theme_classic() +
          theme(title = element_blank(),
              axis.title.x = element_blank(),
              axis.title.y = element_text(size = 8),
@@ -303,17 +312,17 @@ plotly::renderPlotly({
     plot_team_contribution <- 
         awayTeam_df() %>% 
         
-        ggplot(aes(x = percent_of_team_touches,
+        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
                    y = percent_of_team_contributions,
                    label = name)) +
     geom_point() +
-    labs(title = NULL,
+    ggplot2::labs(title = NULL,
          x = "Percent of Team Touches",
          y = "Percent of Team Goal Contributions") +
     geom_point(color = "#589E40FF", fill = "#589E40FF") +
-    geom_text(aes(label=name), size=3, nudge_y = 0.005) +
-    geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
-    theme_classic() +
+    geom_text(ggplot2::aes(label=name), size=3, nudge_y = 0.005) +
+    ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
+    ggplot2::theme_classic() +
     theme(title = element_blank(),
           legend.text = element_text(size = 8),
           axis.title.x = element_text(size = 8),
@@ -333,16 +342,16 @@ plotly::ggplotly(plot_team_contribution)
 plotly::renderPlotly({
     plot_turnovers <- 
         awayTeam_df() %>% 
-        pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
+        tidyr::pivot_longer(cols = c(turnovers, not_turnovers), names_to = "TO", values_to = "Number") %>%
 
-        ggplot(aes(x = reorder(name, -Number, sum),
+        ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
                    y = Number,
                    fill = TO)) +
-    geom_bar(position="stack", stat = "identity") +
-    scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
-    labs(title = NULL,
+    ggplot2::geom_bar(position="stack", stat = "identity") +
+    ggplot2::scale_fill_manual(values = c("#C2697FFF", "#9E4058FF"), name = "") +
+    ggplot2::labs(title = NULL,
          y = "Touches") +
-    theme_classic() +
+    ggplot2::theme_classic() +
     theme(title = element_blank(),
           axis.title.x = element_blank(),
           axis.title.y = element_text(size = 8),
