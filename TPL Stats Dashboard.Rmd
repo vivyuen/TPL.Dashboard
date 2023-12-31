@@ -71,7 +71,7 @@ It aims to let players see a visualization of their game by game statistics and 
 
 ```{r}
 
-pkgload::load_all("C:/Users/tyler/Documents/R Workspace/TPL.Dashboard")
+pkgload::load_all("/Users/viv/Library/CloudStorage/OneDrive-Personal/Work/R Practice/TPL/TPL.Dashboard")
 
 weekly_data_clean = clean_weekly_stats()
 plot_game_involvement = create_plot_game_involvement(weekly_data_clean)
@@ -82,10 +82,10 @@ gameIdNames <- list(
         gameId = unique(weekly_data_clean$gameId),
         gameName = unique(weekly_data_clean$gameIdNames)
     )
-zevList <- setNames(unique(weekly_data_clean$gameId), unique(weekly_data_clean$gameIdNames))
+listGameIdNames <- setNames(unique(weekly_data_clean$gameId), unique(weekly_data_clean$gameIdNames))
 
 selectInput(inputId = "gameId", label = "Game to Analyze:",
-            choices = zevList)
+            choices = listGameIdNames)
 
 filtered_game_data <- reactive(
     filter(weekly_data_clean, gameId %in% input$gameId)
@@ -170,41 +170,6 @@ plotly::renderPlotly({
 
 ```
 
-### Contribution to Team
-```{r}
-
-plotly::renderPlotly({
-    plot_team_contribution <- 
-        homeTeam_df() %>% 
-        
-        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
-                   y = percent_of_team_contributions,
-                   label = name)) +
-    geom_point() +
-    ggplot2::labs(title = NULL,
-         x = "Percent of Team Touches",
-         y = "Percent of Team Goal Contributions") +
-    geom_point(color = "#589E40FF", fill = "#589E40FF") +
-    geom_text(ggplot2::aes(label=name), 
-              size=3, 
-              nudge_y = 0.005) +
-    ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
-    ggplot2::theme_classic() +
-    theme(title = element_blank(),
-          legend.text = element_text(size = 8),
-          axis.title.x = element_text(size = 8),
-          axis.title.y = element_text(size = 8)) +
-    scale_x_continuous(labels = scales::percent_format(scale = 100),
-                       expand = expansion(mult = c(0.05, 0.1))) +
-    scale_y_continuous(labels = scales::percent_format(scale = 100),
-                       expand = expansion(mult = c(0.05, 0.1)))
-
-plotly::ggplotly(plot_team_contribution, tooltip = c("x", "y"))
-
-})
-
-```
-
 ### Turnovers to Touches
 ```{r}
 plotly::renderPlotly({
@@ -232,11 +197,47 @@ plotly::ggplotly(plot_turnovers, tooltip = c("y", "fill"))
 })
 ```
 
+### Contribution to Team
+```{r}
+
+plotly::renderPlotly({
+    plot_team_contribution <- 
+        homeTeam_df() %>% 
+        
+        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
+                   y = percent_of_team_contributions,
+                   label = name)) +
+    geom_point() +
+    ggplot2::labs(title = NULL,
+         x = "Percent of Team Touches",
+         y = "Percent of Team Goal Contributions") +
+    geom_point(color = "#589E40FF", fill = "#589E40FF") +
+    geom_text(ggplot2::aes(label=name), 
+              size=3, 
+              nudge_y = 0.005) +
+    #ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
+    ggplot2::theme_classic() +
+    theme(title = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8)) +
+    scale_x_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.1))) +
+    scale_y_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.1)))
+
+plotly::ggplotly(plot_team_contribution, tooltip = c("x", "y"))
+
+})
+
+```
+
 ### Home Team
 ```{r home team datatable}
 DT::renderDataTable({
   df1 <-
-    homeTeam_df()
+    homeTeam_df() %>% 
+      select(name, goals, assists, second_assists, blocks, throwaways, drops, other_touches)
   
   nice_datatable(df1)
 })
@@ -304,39 +305,6 @@ plotly::renderPlotly({
  })
 ```
 
-### Contribution to Team 
-
-```{r}
-
-plotly::renderPlotly({
-    plot_team_contribution <- 
-        awayTeam_df() %>% 
-        
-        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
-                   y = percent_of_team_contributions,
-                   label = name)) +
-    geom_point() +
-    ggplot2::labs(title = NULL,
-         x = "Percent of Team Touches",
-         y = "Percent of Team Goal Contributions") +
-    geom_point(color = "#589E40FF", fill = "#589E40FF") +
-    geom_text(ggplot2::aes(label=name), size=3, nudge_y = 0.005) +
-    ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
-    ggplot2::theme_classic() +
-    theme(title = element_blank(),
-          legend.text = element_text(size = 8),
-          axis.title.x = element_text(size = 8),
-          axis.title.y = element_text(size = 8)) +
-    scale_x_continuous(labels = scales::percent_format(scale = 100),
-                       expand = expansion(mult = c(0.05, 0.1))) +
-    scale_y_continuous(labels = scales::percent_format(scale = 100),
-                       expand = expansion(mult = c(0.05, 0.005)))
-
-plotly::ggplotly(plot_team_contribution)
-
-})
-```
-
 ### Turnovers to Touches 
 ```{r}
 plotly::renderPlotly({
@@ -364,14 +332,49 @@ plotly::ggplotly(plot_turnovers, tooltip = c("y", "fill"))
 })
 ```
 
+### Contribution to Team 
+```{r}
+
+plotly::renderPlotly({
+    plot_team_contribution <- 
+        awayTeam_df() %>% 
+        
+        ggplot2::ggplot(ggplot2::aes(x = percent_of_team_touches,
+                   y = percent_of_team_contributions,
+                   label = name)) +
+    geom_point() +
+    ggplot2::labs(title = NULL,
+         x = "Percent of Team Touches",
+         y = "Percent of Team Goal Contributions") +
+    geom_point(color = "#589E40FF", fill = "#589E40FF") +
+    geom_text(ggplot2::aes(label=name), size=3, nudge_y = 0.005) +
+    #ggrepel::geom_text_repel(box.padding = 0.5, force = 5, segment.alpha = 0) +
+    ggplot2::theme_classic() +
+    theme(title = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8)) +
+    scale_x_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.1))) +
+    scale_y_continuous(labels = scales::percent_format(scale = 100),
+                       expand = expansion(mult = c(0.05, 0.005)))
+
+plotly::ggplotly(plot_team_contribution)
+
+})
+```
+
 ### Away Team
 ```{r away team datatable}
+
 DT::renderDataTable({
   df2 <-
-    awayTeam_df() 
+    awayTeam_df() %>% 
+      select(name, goals, assists, second_assists, blocks, throwaways, drops, other_touches)
   
   nice_datatable(df2)
-})
+}) 
+
 ```
 
 # Week 2 {data-navmenu="Game Stats"}

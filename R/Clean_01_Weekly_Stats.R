@@ -55,7 +55,8 @@ clean_weekly_stats <- function()
         dplyr::mutate(date = lubridate::mdy(date)) %>%
         dplyr::arrange(date) %>%
         dplyr::group_by(year_week = format(date, "%Y-%U")) %>%
-        dplyr::mutate(week_number = cur_group_id())
+        dplyr::mutate(week_number = cur_group_id()) %>%
+        dplyr::ungroup()
 
 
     # Apply variable and value labels ----
