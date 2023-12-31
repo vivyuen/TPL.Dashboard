@@ -143,28 +143,36 @@ flexdashboard::renderValueBox({
 ### Game Involvement (Goal Contributions vs Other Touches)
 ```{r}
 
-plotly::renderPlotly({
-     plot_game_involvement <-
-         homeTeam_df() %>%
-         tidyr::pivot_longer(cols = c(goal_contributions, not_goal_contributions), names_to = "GC", values_to = "Number") %>%
-         # arrange(sum(goal_contributions, not_goal_contributions), goal_contributions) %>% 
-         # factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
-         ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
-                    y = Number,
+shiny::renderPlot({
+         
+    gc_long <-
+        tidyr::pivot_longer(
+            homeTeam_df(),
+            cols = c(not_goal_contributions, goal_contributions),
+            names_to = "GC",
+            values_to = "Count"
+        )
+
+    gc_long$GC <-
+        factor(gc_long$GC,
+               levels = c("not_goal_contributions", "goal_contributions"))
+         
+    plot_game_involvement <- ggplot2::ggplot(gc_long, ggplot2::aes(x = reorder(name, -Count, sum),
+                    y = Count,
                     fill = GC)) +
          ggplot2::geom_bar(position = "stack", stat = "identity") +
-         ggplot2::scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
-         ggplot2::labs(title = NULL, 
+         ggplot2::scale_fill_manual(values = c("#785596FF", "#513965FF"), name = "") +
+         ggplot2::labs(title = NULL,
               y = "Touches") +
          ggplot2::theme_classic() +
          theme(title = element_blank(),
              axis.title.x = element_blank(),
-             axis.title.y = element_text(size = 8),
-             legend.text = element_text(size = 8),
+             axis.title.y = element_text(size = 10),
+             legend.text = element_text(size = 10),
              axis.text.x = element_text(angle = 90),
-             legend.position = "none")
-
- plotly::ggplotly(plot_game_involvement, tooltip = c("y", "fill"))
+             legend.position = "top")
+     
+     plot_game_involvement
 
  })
 
@@ -280,27 +288,36 @@ flexdashboard::renderValueBox({
 
 ### Game Involvement (Goal Contributions vs Other Touches) 
 ```{r}
-plotly::renderPlotly({
-     plot_game_involvement <-
-         awayTeam_df() %>%
-         tidyr::pivot_longer(cols = c(not_goal_contributions, goal_contributions), names_to = "GC", values_to = "Number") %>%
-         #factor(levels = c("not_goal_contributions", "goal_contributions")) %>%
-         ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Number, sum),
-                    y = Number,
+shiny::renderPlot({
+         
+    gc_long <-
+        tidyr::pivot_longer(
+            awayTeam_df(),
+            cols = c(not_goal_contributions, goal_contributions),
+            names_to = "GC",
+            values_to = "Count"
+        )
+
+    gc_long$GC <-
+        factor(gc_long$GC,
+               levels = c("not_goal_contributions", "goal_contributions"))
+         
+    plot_game_involvement <- ggplot2::ggplot(gc_long, ggplot2::aes(x = reorder(name, -Count, sum),
+                    y = Count,
                     fill = GC)) +
          ggplot2::geom_bar(position = "stack", stat = "identity") +
-         ggplot2::scale_fill_manual(values = c("#513965FF", "#785596FF"), name = "") +
+         ggplot2::scale_fill_manual(values = c("#785596FF", "#513965FF"), name = "") +
          ggplot2::labs(title = NULL,
               y = "Touches") +
          ggplot2::theme_classic() +
          theme(title = element_blank(),
              axis.title.x = element_blank(),
-             axis.title.y = element_text(size = 8),
-             legend.text = element_text(size = 8),
+             axis.title.y = element_text(size = 10),
+             legend.text = element_text(size = 10),
              axis.text.x = element_text(angle = 90),
-             legend.position = "none")
-
- plotly::ggplotly(plot_game_involvement, tooltip = c("y", "fill"))
+             legend.position = "top")
+     
+     plot_game_involvement
 
  })
 ```
