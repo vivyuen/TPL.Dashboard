@@ -20,7 +20,8 @@ pacman::p_load(
     viridis,
     scales,
     gt,
-    expss
+    expss,
+    stringr
     )
 
 set.seed(12345)
@@ -43,6 +44,36 @@ weekly_data_clean <- weekly_data %>%
 
 # Create Variables  ----
 
+Change player names to initials
+initialsdf <- weekly_data_clean %>%
+    select(name) %>%
+    mutate(
+        split_name = strsplit(name, " ")
+    ) %>%
+    mutate(
+        first_initial = split_name[1]
+    ) %>%
+    view()
+
+split_name = strsplit(initialsdf$name, " ")
+
+for (fullname in split_name) {
+    first_initial = fullname[[1]]
+}
+
+
+
+weekly_data_clean <- weekly_data_clean %>%
+    mutate(
+        initials = str_replace(name,
+                               pattern = "^(\\w{1})(\\w+)\\s(\\w{1})(\\w+)$",
+                               replace = "\\1\\3")
+        )
+
+weekly_data_clean %>%
+    select(name, initials) %>%
+    view()
+
 # Metrics
 weekly_data_clean <- weekly_data_clean %>%
     arrange(gameId, teamId) %>%
@@ -64,13 +95,42 @@ weekly_data_clean <- weekly_data_clean %>%
     ) %>%
     ungroup()
 
+# Cumulative season stats
+cumulative_season_stats <- weekly_data_clean %>%
+    group_by(name) %>%
+    mutate(matches_played = n(),
+           sum_goals = sum(goals),
+           sum_assists = sum(assists),
+           sum_sec_assists = sum(second_assists),
+           sum_blocks = sum(blocks),
+           sum_throwaways = sum(throwaways),
+           sum_drops = sum(drops),
+           sum_touches = sum(other_touches)
+    ) %>%
+    select(name, matches_played, sum_goals, sum_assists, sum_sec_assists, sum_blocks, sum_throwaways, sum_drops, sum_touches) %>%
+    distinct() %>%
+    ungroup()
+
+# Season stats per game
+
+per_game_stats <- cumulative_season_stats %>%
+    mutate(goals_pg = num(sum_goals/matches_played, digits = 2),
+           assists_pg = num(sum_assists/matches_played, digits = 2),
+           sec_assists_pg = num(sum_sec_assists/matches_played, digits = 2),
+           blocks_pg = num(sum_blocks/matches_played, digits = 2),
+           TAs_pg = num(sum_throwaways/matches_played, digits = 2),
+           drops_pg = num(sum_drops/matches_played, digits = 2),
+           touches_pg = num(sum_touches/matches_played, digits = 2)) %>%
+    select(name, matches_played, goals_pg, assists_pg, sec_assists_pg, blocks_pg, TAs_pg, drops_pg, touches_pg)
+
 # Create week_number column
 
 weekly_data_clean <- weekly_data_clean %>%
     mutate(date = mdy(date)) %>%
     arrange(date) %>%
     group_by(year_week = format(date, "%Y-%U")) %>%
-    mutate(week_number = cur_group_id())
+    mutate(week_number = cur_group_id()) %>%
+    ungroup()
 
 
 # Apply variable and value labels ----
@@ -95,15 +155,11 @@ weekly_data_clean <- weekly_data_clean %>%
     mutate(gameIdNames = paste("Week", week_number, "-", homeTeamId, "vs.", awayTeamId, sep = " ")) %>%
     arrange(desc(week_number))
 
-zevGameId <- unique(weekly_data_clean$gameId)
-zevGameName <- unique(weekly_data_clean$gameIdNames)
+GameId <- unique(weekly_data_clean$gameId)
+GameName <- unique(weekly_data_clean$gameIdNames)
 
-zevList <- setNames(zevGameId, zevGameName)
+ListofGames <- setNames(GameId, GameName)
 
-gameIdNames <- list(
-    gameId = unique(weekly_data_clean$gameId),
-    gameName = unique(weekly_data_clean$gameIdNames)
-)
 
 # Apply labels
 
