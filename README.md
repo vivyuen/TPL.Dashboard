@@ -1,1 +1,1 @@
-[2023 Fall Season Toronto Parity League Dashboard.] (https://vivy.shinyapps.io/TPL_Dashboard/)
+[[2023 Fall Season Toronto Parity League Dashboard.]([url](https://vivy.shinyapps.io/TPL_Dashboard/))] 
